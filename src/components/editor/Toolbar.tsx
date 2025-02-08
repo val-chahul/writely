@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { ImageUploadDialog } from './ImageUploadDialog';
+import { useEditorStore } from '../../store/editorStore';
 
 interface ToolbarProps {
   editor: EditorWithTextAlign | null;
@@ -78,6 +79,7 @@ function ToolGroup({ label, children }: ToolGroupProps) {
 
 export function Toolbar({ editor }: ToolbarProps) {
   const [showImageDialog, setShowImageDialog] = useState(false);
+  const historyState = useEditorStore((state) => state.historyState);
 
   if (!editor) return null;
 
@@ -90,13 +92,13 @@ export function Toolbar({ editor }: ToolbarProps) {
       icon: <Undo className="w-4 h-4" />,
       label: 'Undo',
       onClick: () => editor.chain().focus().undo().run(),
-      disabled: !editor.can().undo(),
+      disabled: !historyState.canUndo,
     },
     {
       icon: <Redo className="w-4 h-4" />,
       label: 'Redo',
       onClick: () => editor.chain().focus().redo().run(),
-      disabled: !editor.can().redo(),
+      disabled: !historyState.canRedo,
     },
     {
       icon: <Bold className="w-4 h-4" />,

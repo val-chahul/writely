@@ -30,10 +30,14 @@ interface EditorView {
 interface KeyboardEvent {
   key: string;
   preventDefault: () => void;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
 }
 
 export function useEditor(options: EditorOptions) {
   const setContent = useEditorStore((state) => state.setContent);
+  const setHistoryState = useEditorStore((state) => state.setHistoryState);
 
   const editor = useTipTap({
     immediatelyRender: false, // Fix for SSR hydration
@@ -46,6 +50,10 @@ export function useEditor(options: EditorOptions) {
         },
         heading: {
           levels: [1, 2, 3, 4],
+        },
+        history: {
+          depth: 100, // Store up to 100 history steps
+          newGroupDelay: 500, // Group changes within 500ms
         },
         bulletList: {
           HTMLAttributes: {
@@ -138,12 +146,30 @@ export function useEditor(options: EditorOptions) {
           editor?.chain().focus().insertContent('  ').run();
           return true;
         }
+
+        // Handle undo/redo keyboard shortcuts
+        if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+          event.preventDefault();
+          if (event.shiftKey) {
+            editor?.chain().focus().redo().run();
+          } else {
+            editor?.chain().focus().undo().run();
+          }
+          return true;
+        }
+
         return false;
       },
     },
     onUpdate: ({ editor }: { editor: Editor }) => {
       const html = editor.getHTML();
       setContent(html);
+
+      // Update history state
+      setHistoryState({
+        canUndo: editor.can().undo(),
+        canRedo: editor.can().redo(),
+      });
     },
   });
 

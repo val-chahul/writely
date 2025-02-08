@@ -11,10 +11,15 @@ export interface EditorState extends PersistState {
     keywords: string[];
     ogImage?: string;
   };
+  historyState: {
+    canUndo: boolean;
+    canRedo: boolean;
+  };
   setContent: (content: string) => void;
   setSeoData: (data: Partial<EditorState['seoData']>) => void;
   markAsSaved: () => void;
   resetState: () => void;
+  setHistoryState: (state: { canUndo: boolean; canRedo: boolean }) => void;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -26,6 +31,10 @@ export const useEditorStore = create<EditorState>()(
       title: '',
       description: '',
       keywords: [],
+    },
+    historyState: {
+      canUndo: false,
+      canRedo: false,
     },
     setContent: (content) =>
       set(() => ({
@@ -54,10 +63,16 @@ export const useEditorStore = create<EditorState>()(
           description: '',
           keywords: [],
         },
+        historyState: {
+          canUndo: false,
+          canRedo: false,
+        },
       }),
     // Persist state methods
     lastAutoSave: null,
     enableAutosave: true,
     setEnableAutosave: (enable) => set({ enableAutosave: enable }),
+    setHistoryState: (state: { canUndo: boolean; canRedo: boolean }) =>
+      set({ historyState: state }),
   })),
 );
