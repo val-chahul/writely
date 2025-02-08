@@ -40,7 +40,10 @@ export function SEOSidebar({ analysis, targetKeyword }: SEOSidebarProps) {
               <span>{targetKeyword}</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              Density: {analysis.keywordDensity[targetKeyword].toFixed(1)}%
+              Density:{' '}
+              {analysis.keywordDensity[targetKeyword] !== undefined
+                ? `${analysis.keywordDensity[targetKeyword].toFixed(1)}%`
+                : 'N/A'}
             </div>
           </div>
 

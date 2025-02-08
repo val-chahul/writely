@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { FileText, Edit3, Eye, Columns } from 'lucide-react';
 import { GlobalMarkdownDialogProps } from './types';

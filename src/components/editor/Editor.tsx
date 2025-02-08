@@ -1,18 +1,16 @@
 import { EditorContent } from '@tiptap/react';
 import { useEditor } from '../../hooks/useEditor';
+import { type EditorWithTextAlign } from '../editor/types';
 import { Toolbar } from './Toolbar';
 import { useEditorStore } from '../../store/editorStore';
 import { toast } from 'sonner';
-import { useTheme } from 'next-themes';
 import { useCallback, useEffect } from 'react';
 
 export function Editor() {
   const content = useEditorStore((state) => state.content);
   const isDirty = useEditorStore((state) => state.isDirty);
   const markAsSaved = useEditorStore((state) => state.markAsSaved);
-  const { theme } = useTheme();
-
-  const editor = useEditor({
+  const editor: EditorWithTextAlign | null = useEditor({
     content: content || '',
     placeholder: 'Start writing your blog post...',
   });
@@ -28,7 +26,8 @@ export function Editor() {
         toast.success('Changes saved', {
           className: 'premium-backdrop backdrop-blur-md',
         });
-      } catch (error) {
+      } catch (error: unknown) {
+        console.error('Auto-save failed:', error);
         toast.error('Failed to save changes', {
           className: 'premium-backdrop backdrop-blur-md',
         });

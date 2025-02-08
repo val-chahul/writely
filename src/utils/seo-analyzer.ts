@@ -62,10 +62,36 @@ export function analyzeSEO(
   // Configuration
   const { wordsPerMinute = 200, minKeywordDensity = 1, maxKeywordDensity = 3 } = options;
 
+  // Early return for empty content or keyword
+  if (!content?.trim() || !keyword?.trim()) {
+    return {
+      score: 0,
+      readabilityScore: 0,
+      keywordDensity: { [keyword || '']: 0 },
+      readingTime: 0,
+      recommendations: [
+        {
+          type: 'error',
+          message: !content?.trim() ? 'Content is empty' : 'No target keyword specified',
+        },
+      ],
+      headingStructure: {
+        isValid: false,
+        messages: ['No content to analyze'],
+      },
+      internalLinks: {
+        count: 0,
+        suggestions: ['Add content before analyzing SEO metrics'],
+        density: 0,
+      },
+    };
+  }
+
   // Core metrics calculation
-  const keywordCount = (content.match(new RegExp(keyword, 'gi')) || []).length;
-  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
-  const keywordDensityValue = (keywordCount / wordCount) * 100;
+  const keywordCount = keyword ? (content.match(new RegExp(keyword, 'gi')) || []).length : 0;
+  const words = content.trim().split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+  const keywordDensityValue = wordCount > 0 ? (keywordCount / wordCount) * 100 : 0;
   const readingTimeValue = Math.ceil(wordCount / wordsPerMinute);
 
   // Analyze heading structure
@@ -75,31 +101,41 @@ export function analyzeSEO(
 
   // Analyze internal links
   const internalLinkCount = (content.match(/\[([^\]]+)\]\((?!http)[^)]+\)/g) || []).length;
-  const linkDensity = (internalLinkCount / wordCount) * 100;
+  const linkDensity = wordCount > 0 ? (internalLinkCount / wordCount) * 100 : 0;
 
   // Generate recommendations
   const recommendations: SEORecommendation[] = [];
 
-  // Keyword density recommendations
-  if (keywordDensityValue < minKeywordDensity) {
+  // Content length recommendations
+  if (wordCount < 100) {
     recommendations.push({
-      type: 'warning',
-      message: `Keyword density (${keywordDensityValue.toFixed(1)}%) is below recommended minimum of ${minKeywordDensity}%`,
-    });
-  } else if (keywordDensityValue > maxKeywordDensity) {
-    recommendations.push({
-      type: 'warning',
-      message: `Keyword density (${keywordDensityValue.toFixed(1)}%) exceeds recommended maximum of ${maxKeywordDensity}%`,
-    });
-  } else {
-    recommendations.push({
-      type: 'success',
-      message: 'Keyword density is within optimal range',
+      type: 'error',
+      message: 'Content is too short for meaningful SEO analysis',
     });
   }
 
+  // Keyword density recommendations
+  if (wordCount >= 100) {
+    if (keywordDensityValue < minKeywordDensity) {
+      recommendations.push({
+        type: 'warning',
+        message: `Keyword density (${keywordDensityValue.toFixed(1)}%) is below recommended minimum of ${minKeywordDensity}%`,
+      });
+    } else if (keywordDensityValue > maxKeywordDensity) {
+      recommendations.push({
+        type: 'warning',
+        message: `Keyword density (${keywordDensityValue.toFixed(1)}%) exceeds recommended maximum of ${maxKeywordDensity}%`,
+      });
+    } else {
+      recommendations.push({
+        type: 'success',
+        message: 'Keyword density is within optimal range',
+      });
+    }
+  }
+
   // Internal linking recommendations
-  if (internalLinkCount < 2) {
+  if (internalLinkCount < 2 && wordCount >= 300) {
     recommendations.push({
       type: 'warning',
       message: 'Consider adding more internal links to improve content connectivity',
@@ -177,9 +213,18 @@ function calculateScore(metrics: {
 }): number {
   let score = 100;
 
-  // Keyword density impact
-  if (metrics.keywordDensityValue < 1 || metrics.keywordDensityValue > 3) {
-    score -= 10;
+  // Word count impact
+  if (metrics.wordCount < 100) {
+    score -= 50; // Significant penalty for very short content
+  } else if (metrics.wordCount < 300) {
+    score -= 25;
+  }
+
+  // Keyword density impact (only if content is substantial)
+  if (metrics.wordCount >= 100) {
+    if (metrics.keywordDensityValue < 1 || metrics.keywordDensityValue > 3) {
+      score -= 10;
+    }
   }
 
   // Heading structure impact
@@ -187,14 +232,9 @@ function calculateScore(metrics: {
     score -= 15;
   }
 
-  // Internal linking impact
-  if (metrics.internalLinkCount < 2) {
+  // Internal linking impact (only for longer content)
+  if (metrics.wordCount >= 300 && metrics.internalLinkCount < 2) {
     score -= 10;
-  }
-
-  // Content length impact
-  if (metrics.wordCount < 300) {
-    score -= 15;
   }
 
   return Math.max(0, Math.min(100, score));
@@ -205,9 +245,14 @@ function calculateScore(metrics: {
  * Could be enhanced with more sophisticated algorithms
  */
 function calculateReadabilityScore(content: string): number {
+  if (!content?.trim()) return 0;
+
   // Simple implementation - could be expanded
   const sentences = content.split(/[.!?]+/).filter(Boolean);
   const words = content.split(/\s+/).filter(Boolean);
+
+  if (words.length === 0) return 0;
+
   const avgWordsPerSentence = words.length / sentences.length;
 
   let score = 100;
@@ -219,6 +264,8 @@ function calculateReadabilityScore(content: string): number {
 
   // Penalize very long paragraphs
   const paragraphs = content.split('\n\n').filter(Boolean);
+  if (paragraphs.length === 0) return 0;
+
   const avgWordsPerParagraph = words.length / paragraphs.length;
   if (avgWordsPerParagraph > 150) {
     score -= 10;
@@ -232,6 +279,12 @@ function calculateReadabilityScore(content: string): number {
  */
 function getInternalLinkSuggestions(linkCount: number, wordCount: number): string[] {
   const suggestions: string[] = [];
+
+  if (wordCount < 100) {
+    suggestions.push('Add more content before focusing on internal linking');
+    return suggestions;
+  }
+
   const recommendedMinLinks = Math.floor(wordCount / 200); // 1 link per 200 words
 
   if (linkCount < recommendedMinLinks) {

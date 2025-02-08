@@ -1,4 +1,4 @@
-import { type Editor } from '@tiptap/react';
+import { type EditorWithTextAlign, type TextAlignChain } from './types';
 import {
   Bold,
   Italic,
@@ -16,10 +16,15 @@ import {
   Type,
   Hash,
   AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
 } from 'lucide-react';
+import { useState } from 'react';
+import { ImageUploadDialog } from './ImageUploadDialog';
 
 interface ToolbarProps {
-  editor: Editor | null;
+  editor: EditorWithTextAlign | null;
 }
 
 interface ToolbarButtonProps {
@@ -72,7 +77,13 @@ function ToolGroup({ label, children }: ToolGroupProps) {
 }
 
 export function Toolbar({ editor }: ToolbarProps) {
+  const [showImageDialog, setShowImageDialog] = useState(false);
+
   if (!editor) return null;
+
+  const handleImageUpload = (base64: string, alt: string, caption: string) => {
+    editor.chain().focus().setImage({ src: base64, alt, title: caption }).run();
+  };
 
   const actions = [
     {
@@ -156,12 +167,7 @@ export function Toolbar({ editor }: ToolbarProps) {
     {
       icon: <ImageIcon className="w-4 h-4" />,
       label: 'Insert Image',
-      onClick: () => {
-        const url = window.prompt('Enter image URL');
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
-        }
-      },
+      onClick: () => setShowImageDialog(true),
     },
   ];
 
@@ -179,6 +185,39 @@ export function Toolbar({ editor }: ToolbarProps) {
       tools: actions.slice(5, 8), // H1, H2, H3 (Markdown: #, ##, ###)
     },
     {
+      label: 'Align',
+      tools: [
+        {
+          icon: <AlignLeft className="w-4 h-4" />,
+          label: 'Align Left',
+          onClick: () => (editor.chain().focus() as TextAlignChain).setTextAlign('left').run(),
+          isActive:
+            editor.isActive({ textAlign: 'left' }) ||
+            (!editor.isActive({ textAlign: 'center' }) &&
+              !editor.isActive({ textAlign: 'right' }) &&
+              !editor.isActive({ textAlign: 'justify' })),
+        },
+        {
+          icon: <AlignCenter className="w-4 h-4" />,
+          label: 'Align Center',
+          onClick: () => (editor.chain().focus() as TextAlignChain).setTextAlign('center').run(),
+          isActive: editor.isActive({ textAlign: 'center' }),
+        },
+        {
+          icon: <AlignRight className="w-4 h-4" />,
+          label: 'Align Right',
+          onClick: () => (editor.chain().focus() as TextAlignChain).setTextAlign('right').run(),
+          isActive: editor.isActive({ textAlign: 'right' }),
+        },
+        {
+          icon: <AlignJustify className="w-4 h-4" />,
+          label: 'Justify',
+          onClick: () => (editor.chain().focus() as TextAlignChain).setTextAlign('justify').run(),
+          isActive: editor.isActive({ textAlign: 'justify' }),
+        },
+      ],
+    },
+    {
       label: 'Lists',
       tools: actions.slice(8, 10), // Bullet, Ordered (Markdown: -, 1.)
     },
@@ -193,29 +232,37 @@ export function Toolbar({ editor }: ToolbarProps) {
   ];
 
   return (
-    <div className="px-4 py-3 flex flex-wrap items-center justify-between md:justify-start gap-1.5 md:gap-3 overflow-x-auto scrollbar-premium">
-      <div className="flex flex-wrap items-center gap-0.5 md:gap-2">
-        {toolGroups.map((group) => (
-          <ToolGroup key={group.label} label={group.label}>
-            {group.tools.map((action, index) => (
-              <ToolbarButton key={`${group.label}-${index}`} {...action} />
-            ))}
-          </ToolGroup>
-        ))}
-      </div>
-      <div className="hidden md:flex items-center gap-3 text-sm text-muted-foreground premium-backdrop px-3 py-1.5 rounded-full border border-gray-200/50 dark:border-gray-700/50">
-        <div className="flex items-center gap-2">
-          <Type className="w-4 h-4" />
-          <kbd className="px-2 py-0.5 text-xs font-mono bg-white/70 dark:bg-gray-900/70 rounded-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-            Markdown
-          </kbd>
+    <>
+      <div className="px-4 py-3 flex flex-wrap items-center justify-between md:justify-start gap-1.5 md:gap-3 overflow-x-auto scrollbar-premium">
+        <div className="flex flex-wrap items-center gap-0.5 md:gap-2">
+          {toolGroups.map((group) => (
+            <ToolGroup key={group.label} label={group.label}>
+              {group.tools.map((action, index) => (
+                <ToolbarButton key={`${group.label}-${index}`} {...action} />
+              ))}
+            </ToolGroup>
+          ))}
         </div>
-        <div className="w-px h-3 bg-gray-200/50 dark:bg-gray-700/50" />
-        <div className="flex items-center gap-2">
-          <Hash className="w-4 h-4" />
-          <span className="text-xs">Shortcuts enabled</span>
+        <div className="hidden md:flex items-center gap-3 text-sm text-muted-foreground premium-backdrop px-3 py-1.5 rounded-full border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center gap-2">
+            <Type className="w-4 h-4" />
+            <kbd className="px-2 py-0.5 text-xs font-mono bg-white/70 dark:bg-gray-900/70 rounded-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+              Markdown
+            </kbd>
+          </div>
+          <div className="w-px h-3 bg-gray-200/50 dark:bg-gray-700/50" />
+          <div className="flex items-center gap-2">
+            <Hash className="w-4 h-4" />
+            <span className="text-xs">Shortcuts enabled</span>
+          </div>
         </div>
       </div>
-    </div>
+
+      <ImageUploadDialog
+        isOpen={showImageDialog}
+        onClose={() => setShowImageDialog(false)}
+        onUpload={handleImageUpload}
+      />
+    </>
   );
 }

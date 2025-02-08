@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Command } from 'cmdk';
-import { Share2, Save, CommandIcon, Search, Sun, Moon } from 'lucide-react';
+import { CommandIcon, Search, Sun, Moon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -24,7 +24,6 @@ export default function EditorPage() {
   const [targetKeyword, setTargetKeyword] = useState('');
   const [seoAnalysis, setSeoAnalysis] = useState<SEOAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [metaDescription, setMetaDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // Add keyboard shortcut for command palette
@@ -41,7 +40,7 @@ export default function EditorPage() {
   }, []);
 
   // Analyze SEO
-  const analyzeSEOContent = () => {
+  const analyzeSEOContent = useCallback(() => {
     if (!content || !targetKeyword) return;
 
     setIsAnalyzing(true);
@@ -56,7 +55,10 @@ export default function EditorPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [content, targetKeyword]);
+
+  // Run analysis when content or keyword changes
+  useEffect(analyzeSEOContent, [analyzeSEOContent]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 px-4 md:px-8 py-6">
@@ -89,31 +91,43 @@ export default function EditorPage() {
                 <TooltipContent>Command Palette (⌘K)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button variant="outline" className="gap-2">
-              <Share2 className="h-4 w-4" /> Share
-            </Button>
-            <Button className="gap-2">
-              <Save className="h-4 w-4" /> Save
-            </Button>
           </div>
         </div>
       </header>
 
       <main className="h-[calc(100vh-8rem)] mt-6">
         <div className="flex h-full gap-6">
-          <div className="flex-1 overflow-hidden relative">
-            <Card className="h-full overflow-hidden">
+          <div className="flex-1 overflow-hidden relative flex flex-col">
+            <Card className="mb-4 p-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="targetKeyword">Target Keyword</Label>
+                  <Input
+                    id="targetKeyword"
+                    value={targetKeyword}
+                    onChange={(e) => {
+                      setTargetKeyword(e.target.value);
+                      // This will trigger the useEffect that runs analyzeSEO
+                    }}
+                    placeholder="Enter target keyword for SEO analysis"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="flex-1 overflow-hidden">
               <Editor />
             </Card>
           </div>
 
-          {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-          {isAnalyzing ? (
-            <div className="animate-pulse">Analyzing content...</div>
-          ) : (
-            seoAnalysis && <SEOSidebar analysis={seoAnalysis} targetKeyword={targetKeyword} />
-          )}
+          <div className="flex flex-col gap-4">
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            {isAnalyzing ? (
+              <div className="animate-pulse">Analyzing content...</div>
+            ) : (
+              seoAnalysis && <SEOSidebar analysis={seoAnalysis} targetKeyword={targetKeyword} />
+            )}
+          </div>
         </div>
       </main>
 

@@ -7,9 +7,11 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
 import { common, createLowlight } from 'lowlight';
 import { useEditorStore } from '../store/editorStore';
 import type { Editor } from '@tiptap/core';
+import { EditorWithTextAlign } from '@/components/editor/types';
 
 const lowlight = createLowlight(common);
 
@@ -19,8 +21,10 @@ interface EditorOptions {
   editable?: boolean;
 }
 
+import { EditorState } from '@tiptap/pm/state';
+
 interface EditorView {
-  state: any;
+  state: EditorState;
 }
 
 interface KeyboardEvent {
@@ -35,6 +39,11 @@ export function useEditor(options: EditorOptions) {
     immediatelyRender: false, // Fix for SSR hydration
     extensions: [
       StarterKit.configure({
+        paragraph: {
+          HTMLAttributes: {
+            class: 'text-gray-800 dark:text-gray-200',
+          },
+        },
         heading: {
           levels: [1, 2, 3, 4],
         },
@@ -68,6 +77,11 @@ export function useEditor(options: EditorOptions) {
             class: 'bg-gray-100 rounded px-1 py-0.5 font-mono text-sm',
           },
         },
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+        defaultAlignment: 'left',
       }),
       Placeholder.configure({
         placeholder: options.placeholder || 'Start writing...',
@@ -133,5 +147,5 @@ export function useEditor(options: EditorOptions) {
     },
   });
 
-  return editor;
+  return editor as EditorWithTextAlign;
 }
