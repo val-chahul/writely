@@ -15,8 +15,8 @@
   }
 
   body {
-    @apply text-gray-900 dark:text-gray-100 
-           bg-white dark:bg-gray-900 
+    @apply text-slate-900 dark:text-slate-100 
+           bg-white dark:bg-slate-900 
            font-sans antialiased min-h-full;
   }
 
@@ -28,30 +28,35 @@
 
 @layer base {
   :root {
-    --editor-surface: 0 0% 100%;
-    --editor-border: 240 5.9% 90%;
-    --editor-input: 240 5.9% 90%;
-    --editor-ring: 212.7 26.8% 83.9%;
-    --editor-background: 0 0% 100%;
-    --editor-foreground: 240 10% 3.9%;
-    --editor-muted: 240 3.8% 46.1%;
-    --background: #ffffff;
-    --foreground: #171717;
+    color-scheme: light;
+    --background: theme('colors.white');
+    --foreground: theme('colors.slate.900');
+
+    --editor-surface: theme('colors.white');
+    --editor-border: theme('colors.slate.200');
+    --editor-input: theme('colors.slate.200');
+    --editor-ring: theme('colors.slate.300');
+    --editor-background: theme('colors.white');
+    --editor-foreground: theme('colors.slate.900');
+    --editor-muted: theme('colors.slate.500');
+
     --primary-rgb: 37, 99, 235;
   }
 
   .dark {
-    --editor-surface: 240 10% 3.9%;
-    --editor-border: 240 3.7% 15.9%;
-    --editor-input: 240 3.7% 15.9%;
-    --editor-ring: 240 4.9% 83.9%;
-    --editor-background: 240 10% 3.9%;
-    --editor-foreground: 0 0% 98%;
-    --editor-muted: 240 5% 64.9%;
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary-rgb: 59, 130, 246;
     color-scheme: dark;
+    --background: theme('colors.slate.950');
+    --foreground: theme('colors.slate.50');
+
+    --editor-surface: theme('colors.slate.900');
+    --editor-border: theme('colors.slate.800');
+    --editor-input: theme('colors.slate.800');
+    --editor-ring: theme('colors.slate.700');
+    --editor-background: theme('colors.slate.900');
+    --editor-foreground: theme('colors.slate.50');
+    --editor-muted: theme('colors.slate.400');
+
+    --primary-rgb: 59, 130, 246;
   }
 }
 
@@ -64,15 +69,15 @@
            prose-h1:text-4xl prose-h1:leading-[1.1]
            prose-h2:text-3xl prose-h2:leading-[1.2]
            prose-h3:text-2xl prose-h3:leading-[1.3]
-           prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
+           prose-blockquote:text-slate-700 dark:prose-blockquote:text-slate-300
            prose-blockquote:border-l-4 prose-blockquote:border-primary-500/50
            prose-blockquote:px-6 prose-blockquote:py-4
            prose-code:text-primary-600 dark:prose-code:text-primary-400 
            prose-code:before:content-[''] prose-code:after:content-['']
            prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
            prose-code:bg-primary-50/50 dark:prose-code:bg-primary-900/20
-           prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800
-           prose-pre:text-gray-100 dark:prose-pre:text-gray-200
+           prose-pre:bg-slate-900 dark:prose-pre:bg-slate-800
+           prose-pre:text-slate-100 dark:prose-pre:text-slate-200
            prose-pre:p-4 prose-pre:rounded-lg
            prose-img:rounded-lg prose-img:shadow-lg
            prose-a:text-primary-600 dark:prose-a:text-primary-400
@@ -83,7 +88,7 @@
   }
 
   .toolbar-button {
-    @apply p-2.5 text-gray-600 dark:text-gray-300 rounded-lg
+    @apply p-2.5 text-slate-600 dark:text-slate-300 rounded-lg
            transition-premium disabled:opacity-40
            disabled:cursor-not-allowed relative
            after:absolute after:inset-0 after:rounded-lg
@@ -96,20 +101,20 @@
 
   .toolbar-group {
     @apply flex items-center gap-1.5 px-3 py-1.5
-           border-r border-gray-200/50 dark:border-gray-700/50 last:border-0
-           hover:bg-gray-50/50 dark:hover:bg-gray-800/50
+           border-r border-slate-200/50 dark:border-slate-700/50 last:border-0
+           hover:bg-slate-50/50 dark:hover:bg-slate-800/50
            rounded-lg transition-premium;
   }
 
   /* Code block syntax highlighting */
   .hljs {
-    @apply bg-transparent text-gray-100 dark:text-gray-200 
+    @apply bg-transparent text-slate-100 dark:text-slate-200 
            text-[15px] leading-relaxed font-mono;
   }
 
   .hljs-comment,
   .hljs-quote {
-    @apply text-gray-500 dark:text-gray-400 italic;
+    @apply text-slate-500 dark:text-slate-400 italic;
   }
 
   .hljs-keyword,
@@ -146,11 +151,11 @@
 @layer utilities {
   .scrollbar-premium {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.gray.200') transparent;
+    scrollbar-color: theme('colors.slate.200') transparent;
   }
 
   .dark .scrollbar-premium {
-    scrollbar-color: theme('colors.gray.700') transparent;
+    scrollbar-color: theme('colors.slate.700') transparent;
   }
 
   .scrollbar-premium::-webkit-scrollbar {
@@ -163,8 +168,8 @@
   }
 
   .scrollbar-premium::-webkit-scrollbar-thumb {
-    @apply bg-gray-200/80 hover:bg-gray-300/80 
-           dark:bg-gray-700/80 dark:hover:bg-gray-600/80 
+    @apply bg-slate-200/80 hover:bg-slate-300/80 
+           dark:bg-slate-700/80 dark:hover:bg-slate-600/80 
            rounded-full transition-colors;
     border: 2px solid transparent;
     background-clip: content-box;
@@ -172,7 +177,7 @@
 
   .focus-ring {
     @apply ring-2 ring-primary-500/20 ring-offset-2 
-           ring-offset-white dark:ring-offset-gray-900 outline-none;
+           ring-offset-white dark:ring-offset-slate-900 outline-none;
   }
 
   .transition-premium {
@@ -182,8 +187,8 @@
   }
 
   .premium-backdrop {
-    @apply backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 
-           border border-gray-200/50 dark:border-gray-700/50 
+    @apply backdrop-blur-lg bg-white/90 dark:bg-slate-900/90 
+           border border-slate-200/50 dark:border-slate-700/50 
            shadow-lg hover:shadow-xl hover:-translate-y-0.5
            transition-premium;
 

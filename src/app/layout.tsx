@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import './globals.css';
 
 const inter = Inter({
@@ -28,26 +29,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="antialiased bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+      <body className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+        <ThemeProvider>
           {/* Premium grid pattern overlay */}
-          <div className="fixed inset-0 -z-10 h-full w-full bg-white dark:bg-gray-950">
-            <div
-              className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-800/50 bg-[size:3rem_3rem] opacity-20"
-              style={{
-                maskImage: 'radial-gradient(circle at center, white, transparent 80%)',
-                WebkitMaskImage: 'radial-gradient(circle at center, white, transparent 80%)',
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-primary-100/30 dark:from-primary-950/30 dark:to-primary-900/30" />
+          {/* Background with grid pattern and gradient */}
+          <div className="fixed inset-0 -z-10">
+            <div className="absolute inset-0 bg-white dark:bg-slate-950">
+              <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-800/50 bg-[size:3rem_3rem] opacity-20 bg-repeat" />
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/30 via-transparent to-slate-100/30 dark:from-slate-950/30 dark:to-slate-900/30" />
+            </div>
           </div>
 
-          {children}
+          <div className="relative min-h-screen flex flex-col">
+            <ThemeToggle />
+            {children}
+            <footer className="w-full py-4 px-6 border-t border-slate-200/50 dark:border-slate-800/50 backdrop-blur-lg bg-white/90 dark:bg-slate-950/90">
+              <div className="max-w-7xl mx-auto text-center text-slate-600 dark:text-slate-400">
+                Powered by{' '}
+                <a
+                  href="https://www.zenaclove.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                >
+                  Zenaclove IT Solutions
+                </a>
+              </div>
+            </footer>
+          </div>
         </ThemeProvider>
       </body>
     </html>
