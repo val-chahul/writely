@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Writely - Advanced Markdown Blog Editor
 
-## Getting Started
+![Writely](public/next.svg)
 
-First, run the development server:
+Writely is a sophisticated, real-time markdown editor designed for creating and optimizing blog content with built-in SEO analysis capabilities.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+### 📝 Rich Text Editor
+
+- **Dual Editing Modes**: Switch between Visual and Markdown editing
+- **Real-time Preview**: Live preview of your content
+- **Rich Formatting Options**:
+  - Text styling (Bold, Italic)
+  - Headers (H1, H2)
+  - Lists
+  - Code blocks
+  - Blockquotes
+  - Tables with advanced controls
+- **Image Support**: Upload and embed images directly
+- **Undo/Redo**: Full history management
+
+### 🔄 Auto-Save & Recovery
+
+- Automatic content saving every 30 seconds
+- Manual save with Ctrl+S / Cmd+S shortcuts
+- Unsaved changes indicator
+- Session state persistence
+
+### 📊 SEO Analysis & Optimization
+
+- Real-time SEO score calculation
+- Keyword density analysis
+- Readability scoring
+- Content structure analysis:
+  - Heading hierarchy validation
+  - Internal linking suggestions
+  - Meta tags verification
+- Reading time estimation
+- Automated SEO recommendations
+
+### 📈 Content Metrics
+
+- Word count
+- Character count
+- Keyword density tracking
+- Internal links analysis
+- Content structure validation
+
+### 🎨 Modern UI/UX
+
+- Clean, minimalist interface
+- Dark/Light theme support
+- Premium animations and transitions
+- Responsive design
+- Context-aware tooltips
+- Beautiful gradient backgrounds
+
+### 💾 Data Management
+
+- State management using Zustand
+- Front matter support for meta data
+- Content versioning
+- Export capabilities
+
+## 🛠 Technical Architecture
+
+### Frontend Stack
+
+- Next.js for the framework
+- TipTap for the rich text editor
+- Radix UI for accessible components
+- Tailwind CSS for styling
+- Zustand for state management
+
+### Key Components
+
+- `Editor`: Core editing interface with auto-save
+- `MenuBar`: Rich text controls and formatting options
+- `SEOAnalyzer`: Real-time content analysis
+- `ImageUploadDialog`: Image management
+- `TableControls`: Advanced table editing
+
+### Project Structure
+
+```
+src/
+├── app/              # Next.js app directory
+├── components/       # React components
+│   ├── editor/      # Editor-specific components
+│   └── ui/          # Reusable UI components
+├── hooks/           # Custom React hooks
+├── store/           # State management
+├── types/           # TypeScript definitions
+└── utils/           # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Installation**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   pnpm install
+   ```
 
-## Learn More
+2. **Development**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   pnpm dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Build**
+   ```bash
+   pnpm build
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎯 Future Enhancements
 
-## Deploy on Vercel
+- [ ] AI-powered content suggestions
+- [ ] Export to multiple formats
+- [ ] Collaborative editing
+- [ ] Version history
+- [ ] Custom templates
+- [ ] Enhanced SEO tools
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT © Valentine Chahul
+
+---
+
+Built with ❤️ using Next.js and TypeScript
