@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import { withPersist, PersistState } from './middleware/persist';
 
-interface EditorState {
+export interface EditorState extends PersistState {
   content: string;
   isDirty: boolean;
   lastSaved: Date | null;
@@ -16,39 +17,47 @@ interface EditorState {
   resetState: () => void;
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
-  content: '',
-  isDirty: false,
-  lastSaved: null,
-  seoData: {
-    title: '',
-    description: '',
-    keywords: [],
-  },
-  setContent: (content) =>
-    set((state) => ({
-      content,
-      isDirty: true,
-    })),
-  setSeoData: (data) =>
-    set((state) => ({
-      seoData: { ...state.seoData, ...data },
-      isDirty: true,
-    })),
-  markAsSaved: () =>
-    set({
-      isDirty: false,
-      lastSaved: new Date(),
-    }),
-  resetState: () =>
-    set({
-      content: '',
-      isDirty: false,
-      lastSaved: null,
-      seoData: {
-        title: '',
-        description: '',
-        keywords: [],
-      },
-    }),
-}));
+export const useEditorStore = create<EditorState>()(
+  withPersist((set) => ({
+    content: '',
+    isDirty: false,
+    lastSaved: null,
+    seoData: {
+      title: '',
+      description: '',
+      keywords: [],
+    },
+    setContent: (content) =>
+      set(() => ({
+        content,
+        isDirty: true,
+      })),
+    setSeoData: (data) =>
+      set((state) => ({
+        seoData: { ...state.seoData, ...data },
+        isDirty: true,
+      })),
+    markAsSaved: () =>
+      set({
+        isDirty: false,
+        lastSaved: new Date(),
+      }),
+    resetState: () =>
+      set({
+        content: '',
+        isDirty: false,
+        lastSaved: null,
+        lastAutoSave: null,
+        enableAutosave: true,
+        seoData: {
+          title: '',
+          description: '',
+          keywords: [],
+        },
+      }),
+    // Persist state methods
+    lastAutoSave: null,
+    enableAutosave: true,
+    setEnableAutosave: (enable) => set({ enableAutosave: enable }),
+  })),
+);
