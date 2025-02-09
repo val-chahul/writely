@@ -56,7 +56,25 @@ export function SEOSidebar({ analysis, targetKeyword }: SEOSidebarProps) {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-medium">Recommendations</h3>
+            <h3 className="text-sm font-medium mb-2">Meta Tags</h3>
+            <div className="space-y-2 mb-4">
+              {analysis.metaTags.missingTags.length > 0 && (
+                <div className="flex gap-2 text-sm">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
+                  <span className="text-muted-foreground">
+                    Missing: {analysis.metaTags.missingTags.join(', ')}
+                  </span>
+                </div>
+              )}
+              {analysis.metaTags.lengthIssues.map((issue, i) => (
+                <div key={i} className="flex gap-2 text-sm">
+                  <Triangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-1" />
+                  <span className="text-muted-foreground">{issue.message}</span>
+                </div>
+              ))}
+            </div>
+
+            <h3 className="text-sm font-medium">General Recommendations</h3>
             <div className="space-y-2">
               {analysis.recommendations.map(
                 (rec: { type: 'success' | 'warning' | 'error'; message: string }, i: number) => (

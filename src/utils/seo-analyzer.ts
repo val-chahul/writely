@@ -32,6 +32,26 @@ export interface InternalLinks {
 /**
  * Complete SEO analysis results
  */
+export interface MetaTags {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  ogImage?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  twitterCard?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+}
+
+export interface MetaTagAnalysis {
+  score: number;
+  recommendations: SEORecommendation[];
+  missingTags: string[];
+  lengthIssues: { tag: string; message: string }[];
+}
+
 export interface SEOAnalysis {
   score: number;
   readabilityScore: number;
@@ -40,6 +60,7 @@ export interface SEOAnalysis {
   recommendations: SEORecommendation[];
   headingStructure: HeadingStructure;
   internalLinks: InternalLinks;
+  metaTags: MetaTagAnalysis;
   metaDataPresent?: boolean; // Track if meta tags are present
 }
 
@@ -57,6 +78,7 @@ export function analyzeSEO(
     wordsPerMinute?: number;
     minKeywordDensity?: number;
     maxKeywordDensity?: number;
+    metaTags?: MetaTags;
   } = {},
 ): SEOAnalysis {
   // Configuration
@@ -84,6 +106,7 @@ export function analyzeSEO(
         suggestions: ['Add content before analyzing SEO metrics'],
         density: 0,
       },
+      metaTags: analyzeMetaTags(options.metaTags, keyword),
     };
   }
 
@@ -143,12 +166,15 @@ export function analyzeSEO(
   }
 
   // Final analysis object
+  const metaTagAnalysis = analyzeMetaTags(options.metaTags, keyword);
+
   return {
     score: calculateScore({
       keywordDensityValue,
       headingStructure,
       internalLinkCount,
       wordCount,
+      metaTagScore: metaTagAnalysis.score,
     }),
     readabilityScore: calculateReadabilityScore(content),
     keywordDensity: {
@@ -167,6 +193,7 @@ export function analyzeSEO(
       density: linkDensity,
     },
     metaDataPresent: content.includes('---'), // Check for frontmatter
+    metaTags: metaTagAnalysis,
   };
 }
 
@@ -210,6 +237,7 @@ function calculateScore(metrics: {
   headingStructure: HeadingStructure;
   internalLinkCount: number;
   wordCount: number;
+  metaTagScore: number;
 }): number {
   let score = 100;
 
@@ -236,6 +264,9 @@ function calculateScore(metrics: {
   if (metrics.wordCount >= 300 && metrics.internalLinkCount < 2) {
     score -= 10;
   }
+
+  // Meta tag impact
+  score = (score + metrics.metaTagScore) / 2; // Give equal weight to meta tags
 
   return Math.max(0, Math.min(100, score));
 }
@@ -298,4 +329,108 @@ function getInternalLinkSuggestions(linkCount: number, wordCount: number): strin
   }
 
   return suggestions;
+}
+
+/**
+ * Analyzes meta tags for SEO best practices
+ */
+function analyzeMetaTags(tags: MetaTags = {}, keyword: string): MetaTagAnalysis {
+  const missingTags: string[] = [];
+  const lengthIssues: { tag: string; message: string }[] = [];
+  const recommendations: SEORecommendation[] = [];
+  let score = 100;
+
+  // Check title
+  if (!tags.title) {
+    missingTags.push('title');
+    score -= 20;
+    recommendations.push({
+      type: 'error',
+      message: 'Meta title is missing',
+    });
+  } else {
+    if (tags.title.length < 30 || tags.title.length > 60) {
+      lengthIssues.push({
+        tag: 'title',
+        message: `Title length (${tags.title.length}) should be between 30-60 characters`,
+      });
+      score -= 10;
+    }
+    if (!tags.title.toLowerCase().includes(keyword.toLowerCase())) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Target keyword not found in meta title',
+      });
+      score -= 5;
+    }
+  }
+
+  // Check description
+  if (!tags.description) {
+    missingTags.push('description');
+    score -= 15;
+    recommendations.push({
+      type: 'error',
+      message: 'Meta description is missing',
+    });
+  } else {
+    if (tags.description.length < 120 || tags.description.length > 160) {
+      lengthIssues.push({
+        tag: 'description',
+        message: `Description length (${tags.description.length}) should be between 120-160 characters`,
+      });
+      score -= 10;
+    }
+    if (!tags.description.toLowerCase().includes(keyword.toLowerCase())) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Target keyword not found in meta description',
+      });
+      score -= 5;
+    }
+  }
+
+  // Check Open Graph
+  if (!tags.ogTitle || !tags.ogDescription || !tags.ogImage) {
+    missingTags.push('Open Graph tags');
+    score -= 10;
+    recommendations.push({
+      type: 'warning',
+      message: 'Missing Open Graph tags for social media sharing',
+    });
+  }
+
+  // Check Twitter Card
+  if (!tags.twitterCard || !tags.twitterTitle || !tags.twitterDescription || !tags.twitterImage) {
+    missingTags.push('Twitter Card tags');
+    score -= 10;
+    recommendations.push({
+      type: 'warning',
+      message: 'Missing Twitter Card tags for social media sharing',
+    });
+  }
+
+  // Additional recommendations for implemented tags
+  if (tags.keywords && tags.keywords.length > 0) {
+    if (!tags.keywords.includes(keyword)) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Target keyword not included in meta keywords',
+      });
+    }
+    if (tags.keywords.length > 10) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Too many meta keywords (recommended: max 10)',
+      });
+      score -= 5;
+    }
+  }
+
+  return {
+    score: Math.max(0, Math.min(100, score)),
+    recommendations,
+    missingTags,
+    lengthIssues,
+  };
 }
