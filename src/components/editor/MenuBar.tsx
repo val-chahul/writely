@@ -15,6 +15,7 @@ import {
   Save,
   Quote,
   TableIcon,
+  Hash,
 } from 'lucide-react';
 import { MenuBarProps } from './types';
 import { TableControls } from './TableControls';
@@ -26,6 +27,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   onToggleMarkdown,
   onTogglePreview,
   onImageUpload,
+  onOpenTags,
   wordCount,
   characterCount,
   onSave,
@@ -183,6 +185,12 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <div className="flex items-center gap-1 pr-2 border-r">
               <Button onClick={onImageUpload} variant="ghost" size="icon" title="Insert Image">
                 <ImageIcon className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-1 pr-2 border-r">
+              <Button onClick={onOpenTags} variant="ghost" size="icon" title="Manage Tags">
+                <Hash className="w-4 h-4" />
               </Button>
             </div>
 

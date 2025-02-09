@@ -4,12 +4,15 @@ import { type EditorWithTextAlign } from '../editor/types';
 import { Toolbar } from './Toolbar';
 import { useEditorStore } from '../../store/editorStore';
 import { toast } from 'sonner';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { TagsDialog } from './TagsDialog';
 
 export function Editor() {
+  const [showTagsDialog, setShowTagsDialog] = useState(false);
   const content = useEditorStore((state) => state.content);
   const isDirty = useEditorStore((state) => state.isDirty);
   const markAsSaved = useEditorStore((state) => state.markAsSaved);
+  const updateSuggestedTags = useEditorStore((state) => state.updateSuggestedTags);
   const editor: EditorWithTextAlign | null = useEditor({
     content: content || '',
     placeholder: 'Start writing your blog post...',
@@ -39,6 +42,13 @@ export function Editor() {
     const interval = setInterval(autoSave, 30000); // Auto-save every 30 seconds
     return () => clearInterval(interval);
   }, [autoSave]);
+
+  // Update suggested tags when content changes
+  useEffect(() => {
+    if (content) {
+      updateSuggestedTags(content);
+    }
+  }, [content, updateSuggestedTags]);
 
   // Save on Ctrl+S / Cmd+S
   useEffect(() => {
@@ -87,8 +97,10 @@ export function Editor() {
       )}
 
       <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-slate-950/80 border-b border-slate-200/50 dark:border-slate-800/50 shadow-lg hover:bg-white/90 dark:hover:bg-slate-950/90 hover:shadow-xl transition-premium">
-        <Toolbar editor={editor} />
+        <Toolbar editor={editor} onOpenTags={() => setShowTagsDialog(true)} />
       </div>
+
+      <TagsDialog isOpen={showTagsDialog} onClose={() => setShowTagsDialog(false)} />
 
       <div className="flex-grow overflow-y-auto px-4 md:px-8 py-6 md:py-12 animate-fade-in">
         <div className="relative max-w-4xl mx-auto">

@@ -19,7 +19,13 @@ export interface FrontMatterMetadata {
 
 export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
 
-export interface TextAlignChain extends ChainedCommands {
+export interface LinkChain extends ChainedCommands {
+  setLink: (attrs: { href: string; target: string | null }) => this;
+  toggleLink: (attributes: { href: string; target: string | null }) => this;
+  unsetLink: () => this;
+}
+
+export interface TextAlignChain extends LinkChain {
   setTextAlign: (alignment: TextAlignment) => this;
 }
 
@@ -47,6 +53,7 @@ export interface MenuBarProps {
   onToggleMarkdown: () => void;
   onTogglePreview: () => void;
   onImageUpload: () => void;
+  onOpenTags: () => void;
   wordCount: number;
   characterCount: number;
   onSave: () => void;
@@ -58,4 +65,12 @@ export interface ImageUploadDialogProps {
   onClose: () => void;
   onUpload: (base64: string, alt: string, caption: string) => void;
   file?: File;
+}
+
+export interface LinkDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (url: string, text: string, openInNewTab: boolean) => void;
+  initialText?: string;
+  initialUrl?: string;
 }

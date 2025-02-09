@@ -1,4 +1,4 @@
-import { type EditorWithTextAlign, type TextAlignChain } from './types';
+import { type EditorWithTextAlign, type TextAlignChain, type LinkChain } from './types';
 import {
   Bold,
   Italic,
@@ -19,13 +19,17 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Link as LinkIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ImageUploadDialog } from './ImageUploadDialog';
+import { LinkDialog } from './LinkDialog';
+import { Button } from '../ui/button';
 import { useEditorStore } from '../../store/editorStore';
 
 interface ToolbarProps {
   editor: EditorWithTextAlign | null;
+  onOpenTags: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -77,14 +81,65 @@ function ToolGroup({ label, children }: ToolGroupProps) {
   );
 }
 
-export function Toolbar({ editor }: ToolbarProps) {
+export function Toolbar({ editor, onOpenTags }: ToolbarProps) {
   const [showImageDialog, setShowImageDialog] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
   const historyState = useEditorStore((state) => state.historyState);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k' && editor) {
+        e.preventDefault();
+        setShowLinkDialog(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editor]);
 
   if (!editor) return null;
 
+  const getSelectedText = () => {
+    if (editor.state.selection.empty) return '';
+    return editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to);
+  };
+
   const handleImageUpload = (base64: string, alt: string, caption: string) => {
     editor.chain().focus().setImage({ src: base64, alt, title: caption }).run();
+  };
+
+  const handleLinkSubmit = (url: string, text: string, openInNewTab: boolean) => {
+    // If text is provided, insert it with the link
+    if (text) {
+      editor
+        .chain()
+        .focus()
+        .insertContent([
+          {
+            type: 'text',
+            marks: [
+              {
+                type: 'link',
+                attrs: {
+                  href: url,
+                  target: openInNewTab ? '_blank' : null,
+                },
+              },
+            ],
+            text: text,
+          },
+        ])
+        .run();
+    } else {
+      // Otherwise, just set the link on the selected text
+      (editor.chain().focus() as LinkChain)
+        .toggleLink({
+          href: url,
+          target: openInNewTab ? '_blank' : null,
+        })
+        .run();
+    }
   };
 
   const actions = [
@@ -229,21 +284,37 @@ export function Toolbar({ editor }: ToolbarProps) {
     },
     {
       label: 'Insert',
-      tools: actions.slice(12), // Table, Image
+      tools: [
+        ...actions.slice(12), // Table, Image
+        {
+          icon: <LinkIcon className="w-4 h-4" />,
+          label: 'Insert Link (⌘K)',
+          onClick: () => setShowLinkDialog(true),
+          isActive: editor.isActive('link'),
+        },
+      ],
     },
   ];
 
   return (
     <>
       <div className="px-4 py-3 flex flex-wrap items-center justify-between md:justify-start gap-1.5 md:gap-3 overflow-x-auto scrollbar-premium">
-        <div className="flex flex-wrap items-center gap-0.5 md:gap-2">
-          {toolGroups.map((group) => (
-            <ToolGroup key={group.label} label={group.label}>
-              {group.tools.map((action, index) => (
-                <ToolbarButton key={`${group.label}-${index}`} {...action} />
-              ))}
-            </ToolGroup>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-0.5 md:gap-2">
+            {toolGroups.map((group) => (
+              <ToolGroup key={group.label} label={group.label}>
+                {group.tools.map((action, index) => (
+                  <ToolbarButton key={`${group.label}-${index}`} {...action} />
+                ))}
+              </ToolGroup>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 px-2 border-l">
+            <Button onClick={onOpenTags} variant="ghost" size="icon" title="Manage Tags">
+              <Hash className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="hidden md:flex items-center gap-3 text-sm text-muted-foreground premium-backdrop px-3 py-1.5 rounded-full border border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center gap-2">
@@ -264,6 +335,12 @@ export function Toolbar({ editor }: ToolbarProps) {
         isOpen={showImageDialog}
         onClose={() => setShowImageDialog(false)}
         onUpload={handleImageUpload}
+      />
+      <LinkDialog
+        isOpen={showLinkDialog}
+        onClose={() => setShowLinkDialog(false)}
+        onSubmit={handleLinkSubmit}
+        initialText={getSelectedText()}
       />
     </>
   );

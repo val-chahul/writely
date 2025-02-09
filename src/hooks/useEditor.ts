@@ -1,6 +1,7 @@
 import { useEditor as useTipTap } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
@@ -21,8 +22,6 @@ interface EditorOptions {
   editable?: boolean;
 }
 
-import { EditorState } from '@tiptap/pm/state';
-
 interface EditorView {
   state: EditorState;
 }
@@ -34,6 +33,8 @@ interface KeyboardEvent {
   metaKey: boolean;
   shiftKey: boolean;
 }
+
+import { EditorState } from '@tiptap/pm/state';
 
 export function useEditor(options: EditorOptions) {
   const setContent = useEditorStore((state) => state.setContent);
@@ -86,6 +87,13 @@ export function useEditor(options: EditorOptions) {
           },
         },
       }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary-600 dark:text-primary-400 hover:underline',
+          rel: 'noopener noreferrer',
+        },
+      }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right', 'justify'],
@@ -132,9 +140,8 @@ export function useEditor(options: EditorOptions) {
     content: options.content,
     editable: options.editable ?? true,
     autofocus: 'end',
-    enableInputRules: true, // Enable markdown shortcuts while typing
-    enablePasteRules: true, // Enable markdown shortcuts when pasting
-    // Add custom keyboard shortcuts
+    enableInputRules: true,
+    enablePasteRules: true,
     editorProps: {
       attributes: {
         class: 'prose prose-lg dark:prose-invert focus:outline-none max-w-none',
