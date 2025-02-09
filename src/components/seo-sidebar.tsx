@@ -1,7 +1,15 @@
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { ScrollArea } from './ui/scroll-area';
-import { AlertCircle, CheckCircle2, Clock, Search, Triangle, Link } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Search,
+  Triangle,
+  Link,
+  Image as ImageIcon,
+} from 'lucide-react';
 import type { SEOAnalysis } from '../utils/seo-analyzer';
 
 interface SEOSidebarProps {
@@ -108,6 +116,25 @@ export function SEOSidebar({ analysis, targetKeyword }: SEOSidebarProps) {
               </div>
             </div>
           )}
+
+          <div className="space-y-2 mb-4">
+            <h3 className="text-sm font-medium">Images</h3>
+            <div className="flex items-center gap-2 text-sm">
+              <ImageIcon className="w-4 h-4 text-muted-foreground" />
+              <span>{analysis.images.count} images found</span>
+            </div>
+            {analysis.images.recommendations.map((rec, i) => (
+              <div key={i} className="flex gap-2 text-sm">
+                {rec.type === 'error' && (
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
+                )}
+                {rec.type === 'warning' && (
+                  <Triangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-1" />
+                )}
+                <span className="text-muted-foreground">{rec.message}</span>
+              </div>
+            ))}
+          </div>
 
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Internal Links</h3>

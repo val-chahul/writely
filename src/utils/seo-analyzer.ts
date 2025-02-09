@@ -29,6 +29,14 @@ export interface InternalLinks {
   density?: number; // Links per 100 words
 }
 
+interface ImageAnalysis {
+  count: number;
+  missingAlt: number;
+  shortAlt: number; // Alt text < 5 chars
+  longAlt: number; // Alt text > 100 chars
+  recommendations: SEORecommendation[];
+}
+
 /**
  * Complete SEO analysis results
  */
@@ -62,6 +70,7 @@ export interface SEOAnalysis {
   internalLinks: InternalLinks;
   metaTags: MetaTagAnalysis;
   metaDataPresent?: boolean; // Track if meta tags are present
+  images: ImageAnalysis;
 }
 
 /**
@@ -107,8 +116,18 @@ export function analyzeSEO(
         density: 0,
       },
       metaTags: analyzeMetaTags(options.metaTags, keyword),
+      images: {
+        count: 0,
+        missingAlt: 0,
+        shortAlt: 0,
+        longAlt: 0,
+        recommendations: [],
+      },
     };
   }
+
+  // Analyze images
+  const imageAnalysis = analyzeImages(content, keyword);
 
   // Core metrics calculation
   const keywordCount = keyword ? (content.match(new RegExp(keyword, 'gi')) || []).length : 0;
@@ -194,6 +213,7 @@ export function analyzeSEO(
     },
     metaDataPresent: content.includes('---'), // Check for frontmatter
     metaTags: metaTagAnalysis,
+    images: imageAnalysis,
   };
 }
 
@@ -329,6 +349,78 @@ function getInternalLinkSuggestions(linkCount: number, wordCount: number): strin
   }
 
   return suggestions;
+}
+
+/**
+ * Analyzes images in content for accessibility and SEO best practices
+ */
+function analyzeImages(content: string, keyword: string): ImageAnalysis {
+  // Find all markdown images using regex
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  const matches = Array.from(content.matchAll(imageRegex));
+
+  const images = matches.map((match) => ({
+    alt: match[1],
+    url: match[2],
+  }));
+
+  const missingAlt = images.filter((img) => !img.alt.trim()).length;
+  const shortAlt = images.filter(
+    (img) => img.alt.trim().length < 5 && img.alt.trim().length > 0,
+  ).length;
+  const longAlt = images.filter((img) => img.alt.trim().length > 100).length;
+
+  const recommendations: SEORecommendation[] = [];
+
+  if (images.length === 0) {
+    recommendations.push({
+      type: 'warning',
+      message: 'Consider adding relevant images to improve content engagement',
+    });
+  }
+
+  if (missingAlt > 0) {
+    recommendations.push({
+      type: 'error',
+      message: `${missingAlt} image${missingAlt > 1 ? 's' : ''} missing alt text - critical for accessibility and SEO`,
+    });
+  }
+
+  if (shortAlt > 0) {
+    recommendations.push({
+      type: 'warning',
+      message: `${shortAlt} image${shortAlt > 1 ? 's have' : ' has'} very short alt text - consider being more descriptive`,
+    });
+  }
+
+  if (longAlt > 0) {
+    recommendations.push({
+      type: 'warning',
+      message: `${longAlt} image${longAlt > 1 ? 's have' : ' has'} very long alt text - consider being more concise`,
+    });
+  }
+
+  // Check keyword presence in alt text if images exist
+  if (images.length > 0) {
+    const altTextWithKeyword = images.filter((img) =>
+      img.alt.toLowerCase().includes(keyword.toLowerCase()),
+    ).length;
+
+    if (altTextWithKeyword === 0) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Consider including target keyword in relevant image alt text',
+      });
+    }
+  }
+
+  return {
+    count: images.length,
+    missingAlt,
+    shortAlt,
+    longAlt,
+    recommendations,
+  };
 }
 
 /**
